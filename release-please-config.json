@@ -15,8 +15,6 @@
     { "type": "chore", "section": "Chores", "hidden": true }
   ],
   "packages": {
-    ".": {
-      "release-as": "1.0.0"
-    }
+    ".": {}
   }
 }
