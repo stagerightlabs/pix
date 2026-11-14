@@ -253,6 +253,16 @@ Bindings: `IMAGES` (R2 bucket `pix-images`) and `DB` (D1 database `pix-db`).
 - pnpm blocks dependency build scripts by default. `pnpm-workspace.yaml` allows `esbuild` and `workerd`, which Wrangler needs.
 - Tests use `@cloudflare/vitest-plugin`. Its predecessor, `@cloudflare/vitest-pool-workers`, is deprecated and its bundled runtime lags behind current compatibility dates.
 
+## Releases and changelog
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please). The whole repo has one version (root `package.json`) and one `CHANGELOG.md`.
+
+1. Merge PRs to `main` with Conventional Commit titles (the squash commit message is the PR title).
+2. release-please keeps a "chore(main): release x.y.z" PR open that bumps the version and updates `CHANGELOG.md`. `feat` bumps the minor version, `fix` and `perf` bump the patch version, and `!` or a `BREAKING CHANGE:` footer bumps the major version (while below 1.0.0, breaking changes bump the minor version instead).
+3. Merging that PR creates the `vx.y.z` tag and GitHub Release. Deploying is still manual (`pnpm run deploy`).
+
+The workflow authenticates with the `RELEASE_PLEASE_TOKEN` repository secret, a fine-grained PAT with Contents and Pull requests read/write on this repo. It is a PAT rather than `GITHUB_TOKEN` so the release PR triggers the required `check-title` check. If the token expires, release PRs stop updating.
+
 ## Commit Messages
 
 This project uses [Conventional Commits (with scope)](https://www.conventionalcommits.org/en/v1.0.0/#commit-message-with-scope)
