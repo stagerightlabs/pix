@@ -1,10 +1,12 @@
+import { DOWNLOAD_PARAM } from "@pix/schema";
 import { eq } from "drizzle-orm";
 import { getDb } from "./db/client";
 import { images } from "./db/schema";
 import { errorBody } from "./lib/errors";
 
 /** `{site}/{yyyy}/{ulid}.{ext}`: the only shape of key we ever create. Anything else is a 404. */
-const KEY = /^[a-z0-9][a-z0-9-]{0,39}\/\d{4}\/[0-9A-HJKMNP-TV-Z]{26}\.(?:jpg|png|webp|avif|gif)$/;
+const KEY =
+  /^[a-z0-9][a-z0-9-]{0,39}\/\d{4}\/[0-9A-HJKMNP-TV-Z]{26}\.(?:jpg|png|webp|avif|gif|pdf)$/;
 
 /** On every public response, so canvas/fetch use and `COEP: require-corp` pages both work. */
 const CROSS_ORIGIN = {
@@ -46,7 +48,8 @@ export async function handlePublic(request: Request, env: Env): Promise<Response
     });
   }
 
-  const key = new URL(request.url).pathname.slice(1);
+  const url = new URL(request.url);
+  const key = url.pathname.slice(1);
   if (!KEY.test(key)) return notFound();
 
   const row = await getDb(env.DB)
@@ -67,6 +70,12 @@ export async function handlePublic(request: Request, env: Env): Promise<Response
   headers.set("ETag", object.httpEtag);
   if (object.httpMetadata?.contentType) {
     headers.set("Content-Type", object.httpMetadata.contentType);
+  }
+
+  if (url.searchParams.has(DOWNLOAD_PARAM)) {
+    headers.set("Content-Disposition", "attachment");
+  } else if (object.httpMetadata?.contentType === "application/pdf") {
+    headers.set("Content-Disposition", "inline");
   }
 
   if (request.method === "HEAD") {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { detectImageType, getDimensions } from "../src/lib/image";
-import { avif, gif, jpeg, png, svg, webpExtended, webpLossless } from "./fixtures";
+import { avif, gif, jpeg, pdf, png, svg, webpExtended, webpLossless } from "./fixtures";
 
 describe("image detection and dimensions", () => {
   it.each([
@@ -29,6 +29,11 @@ describe("image detection and dimensions", () => {
     ]) {
       expect(detectImageType(bytes)).toBeNull();
     }
+  });
+
+  it("detects PDFs by magic bytes, with no dimensions", () => {
+    expect(detectImageType(pdf())).toBe("application/pdf");
+    expect(getDimensions(pdf(), "application/pdf")).toBeNull();
   });
 
   it("returns null dimensions when the header is unreadable", () => {

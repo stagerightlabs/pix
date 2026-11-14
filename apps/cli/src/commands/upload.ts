@@ -56,7 +56,7 @@ async function pool<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>
 export const registerUpload: Register = (program, ctx) => {
   program
     .command("upload")
-    .description("Upload images and print one URL per file")
+    .description("Upload images or PDFs and print one URL per file")
     .argument("<files...>", "files or glob patterns (quote globs to let pix expand them)")
     .requiredOption("--site <site>", "site to upload to")
     .option("--tag <tags>", "comma-separated tags", csv)

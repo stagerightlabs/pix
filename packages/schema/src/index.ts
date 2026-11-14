@@ -15,8 +15,16 @@ export const ALLOWED_CONTENT_TYPES = [
   "image/webp",
   "image/avif",
   "image/gif",
+  "application/pdf",
 ] as const;
 export type AllowedContentType = (typeof ALLOWED_CONTENT_TYPES)[number];
+
+/** Only raster images can be resized or converted; PDFs are served as-is. */
+export const isTransformable = (contentType: AllowedContentType): boolean =>
+  contentType !== "application/pdf";
+
+/** Query parameter on a public URL that asks for `Content-Disposition: attachment`. */
+export const DOWNLOAD_PARAM = "download";
 
 export const ulidSchema = z.string().regex(/^[0-9A-HJKMNP-TV-Z]{26}$/, "Invalid id");
 export const imageIdSchema = ulidSchema;

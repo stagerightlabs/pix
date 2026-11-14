@@ -132,3 +132,6 @@ export const avif = (w: number, h: number, salt = "") =>
 
 export const svg = () =>
   new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>');
+
+export const pdf = (salt = "") =>
+  new TextEncoder().encode(`%PDF-1.4\n1 0 obj<<>>endobj\ntrailer<<>>\n%%EOF\n${salt}`);

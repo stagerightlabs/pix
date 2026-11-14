@@ -41,6 +41,18 @@ const cases: [
     "dimensions: 64 x 32",
   ],
   [
+    ["info", ID],
+    { method: "GET", path: `/v1/images/${ID}` },
+    { image: image({ content_type: "application/pdf", width: null, height: null }) },
+    "dimensions: n/a",
+  ],
+  [
+    ["url", ID, "--download"],
+    { method: "GET", path: `/v1/images/${ID}` },
+    { image: image() },
+    `/blog/2026/${ID}.png?download`,
+  ],
+  [
     ["tag", ID, "--add", "a, b", "--remove", "c"],
     {
       method: "PATCH",

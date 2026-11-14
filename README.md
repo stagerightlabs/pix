@@ -70,11 +70,11 @@ Routes (all under `/v1`, bearer token required; the base path is `/v1` and not `
 
 Behaviours worth knowing:
 
-- **Type detection** uses magic bytes only (JPEG, PNG, WebP, AVIF, GIF). The client's `Content-Type` and filename are ignored, and SVG is rejected (`415`). The R2 key's extension comes from the detected type: `{site}/{yyyy}/{ulid}.{ext}`.
+- **Type detection** uses magic bytes only (JPEG, PNG, WebP, AVIF, GIF, and PDF via `%PDF-`). The client's `Content-Type` and filename are ignored, and SVG is rejected (`415`). The R2 key's extension comes from the detected type: `{site}/{yyyy}/{ulid}.{ext}`.
 - **Size limit** is the `MAX_UPLOAD_BYTES` var (default 25 MB). It is checked against `Content-Length` first and enforced again while the body is read, so a missing or false `Content-Length` cannot get past it (`413`).
 - **Hashing and memory:** multipart parsing buffers the file in memory, so the SHA-256 is computed from that buffer rather than while streaming to R2. At 25 MB that is well inside the Worker memory limit. R2 also verifies the upload against the hash.
 - **Dedupe** is per site, on SHA-256. Uploading a file that matches a _soft-deleted_ image restores it and returns it as a duplicate.
-- **Dimensions** are read from the file header (no dependency). EXIF rotation is not applied, and AVIF reads the largest `ispe` box, so `width` and `height` can be `null` if a header is unreadable.
+- **Dimensions** are read from the file header (no dependency). EXIF rotation is not applied, and AVIF reads the largest `ispe` box, so `width` and `height` can be `null` if a header is unreadable. PDFs always have `null` dimensions.
 - **Cross-site access** by a site-scoped token returns `403`. For listing, a site token is pinned to its own site, and naming another site is `403`.
 - **Pagination** is on the image id (a ULID, so it follows creation order). `next_cursor` is `null` on the last page. The page size is capped at 100 because D1 allows at most 100 bound parameters per query.
 - **Search** (`q`) matches the filename or alt text case-insensitively, and `%` and `_` in the term match literally.
@@ -87,6 +87,7 @@ Behaviours worth knowing:
 One Worker serves two hostnames and keeps them apart (`src/index.ts`): `pix.stagerightlabs.com` serves images only, `pix-api.stagerightlabs.com` serves the API only, and any other host (including a stray `workers.dev` URL, which is disabled) gets a 404. Both names are the `PUBLIC_HOST` and `API_HOST` vars, and the custom domains in `wrangler.jsonc` `routes` must match them.
 
 - **Originals:** `https://pix.stagerightlabs.com/{site}/{yyyy}/{ulid}.{ext}`, with `Cache-Control: public, max-age=31536000, immutable`, `ETag` and conditional requests (`304`), `Access-Control-Allow-Origin: *`, `Cross-Origin-Resource-Policy: cross-origin`, `X-Content-Type-Options: nosniff`, and no cookies. Only GET, HEAD and OPTIONS are allowed.
+- **PDFs:** served inline by default (`Content-Disposition: inline`). Append `?download` to the URL for `Content-Disposition: attachment`. PDFs are never resized or converted.
 - **Resized or converted:** `https://pix.stagerightlabs.com/cdn-cgi/image/width=800,quality=80,format=auto/{key}`. Build these with `transformUrl()` from `@pix/schema`, which keeps option order fixed (so equal requests share one cache entry) and never emits `width=auto` (each distinct width is billed as its own transformation).
 - **Format caveat:** Cloudflare serves `format=webp` or `format=avif` only when the request's `Accept` header says the client supports it (otherwise you get the original format). Browsers do, so it works in practice; plain `curl` does not unless you send `-H 'Accept: image/webp'`. `format=auto` picks the best supported format, and `format=jpeg` or `png` are always honored.
 - **Client sites** need `img-src https://pix.stagerightlabs.com` in their CSP, and should store keys or relative paths rather than full URLs.
@@ -214,7 +215,7 @@ It checks the credentials against the API, then saves `~/.config/pix/config.json
 | `pix tag <id> --add a,b --remove c`                                                                       | Adds and removes tags.                                                                                                                                          |
 | `pix alt <id> "text"` or `pix alt <id> --clear`                                                           | Sets or clears alt text.                                                                                                                                        |
 | `pix rm <id> [--hard]` / `pix restore <id>`                                                               | Soft delete (recoverable) or permanent delete, and undo a soft delete.                                                                                          |
-| `pix url <id> [--width N] [--height N] [--fit mode] [--quality N] [--format auto\|webp\|avif\|jpeg\|png]` | Prints the image URL, resized or converted if you ask.                                                                                                          |
+| `pix url <id> [--width N] [--height N] [--fit mode] [--quality N] [--format auto\|webp\|avif\|jpeg\|png]` | Prints the file URL, resized or converted if you ask (images only). `--download` adds `?download`.                                                              |
 | `pix sites list` / `pix sites create <id> [--name]`                                                       | Lists sites; creates one (admin).                                                                                                                               |
 | `pix tokens list` / `create <name> [--site]` / `revoke <id>`                                              | Manages tokens (admin). The secret is shown once.                                                                                                               |
 

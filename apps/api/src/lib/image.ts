@@ -11,6 +11,7 @@ const u24le = (b: Uint8Array, i: number) => u16le(b, i) | ((b[i + 2] ?? 0) << 16
 /** Detects the type from magic bytes only. The client's Content-Type and filename are ignored. */
 export function detectImageType(b: Uint8Array): AllowedContentType | null {
   if (b.length < 12) return null;
+  if (ascii(b, 0, 5) === "%PDF-") return "application/pdf";
   if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
   if (ascii(b, 1, 3) === "PNG" && b[0] === 0x89 && ascii(b, 4, 4) === "\r\n\x1a\n") {
     return "image/png";
@@ -102,6 +103,7 @@ function avif(b: Uint8Array): Dimensions | null {
 
 /** Pixel dimensions from the file header, or null if they cannot be read. EXIF rotation is not applied. */
 export function getDimensions(b: Uint8Array, type: AllowedContentType): Dimensions | null {
+  if (type === "application/pdf") return null;
   const dims = {
     "image/png": png,
     "image/gif": gif,
