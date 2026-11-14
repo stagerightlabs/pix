@@ -1,0 +1,29 @@
+{
+  "name": "@pix/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --infer-origin-from-routes=false",
+    "deploy": "wrangler deploy",
+    "types": "wrangler types",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply pix-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply pix-db --remote",
+    "test": "vitest run",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@hono/zod-openapi": "1.6.3",
+    "@pix/schema": "workspace:*",
+    "drizzle-orm": "0.45.4",
+    "hono": "4.13.18",
+    "ulid": "3.0.2"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "1.8.2",
+    "drizzle-kit": "0.31.11",
+    "vitest": "~4.1.12",
+    "wrangler": "4.162.0"
+  }
+}

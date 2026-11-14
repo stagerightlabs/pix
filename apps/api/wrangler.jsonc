@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pix-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "account_id": "20cb7edd3ab2c8c7822679848e1e1f97",
+  // Custom domains create the DNS records and certificates on deploy. The hostnames also appear in
+  // `vars` below (the code reads those); keep the two in step when renaming.
+  "routes": [
+    { "pattern": "pix.stagerightlabs.com", "custom_domain": true },
+    { "pattern": "pix-api.stagerightlabs.com", "custom_domain": true }
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "r2_buckets": [{ "binding": "IMAGES", "bucket_name": "pix-images" }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pix-db",
+      "database_id": "e98a6c73-40a4-4e44-912d-92b1e808a144",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // 300 requests per minute per client IP on /v1 (period must be 10 or 60 seconds).
+  "ratelimits": [
+    { "name": "RATE_LIMITER", "namespace_id": "1001", "simple": { "limit": 300, "period": 60 } }
+  ],
+  "vars": {
+    "PUBLIC_HOST": "pix.stagerightlabs.com",
+    "API_HOST": "pix-api.stagerightlabs.com",
+    "MAX_UPLOAD_BYTES": "26214400"
+  },
+  "secrets": { "required": ["ADMIN_TOKEN"] },
+  "observability": { "enabled": true }
+}

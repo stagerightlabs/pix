@@ -1,0 +1,4 @@
+ADMIN_TOKEN=change-me
+# Local dev: the two hostnames are localhost and 127.0.0.1 on the same port.
+API_HOST=localhost:8787
+PUBLIC_HOST=127.0.0.1:8787
