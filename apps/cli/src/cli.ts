@@ -18,7 +18,7 @@ import type { IO } from "./io";
 export async function run(argv: string[], io: IO): Promise<0 | 1 | 2> {
   const program = new Command()
     .name("pix")
-    .description("Manage images on your pix image host")
+    .description("Manage images and PDFs on your pix host")
     .version(pkg.version)
     .option("--json", "print machine-readable JSON (errors go to stderr as JSON)")
     .showHelpAfterError("(add --help for usage)");

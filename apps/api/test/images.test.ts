@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { beforeAll, describe, expect, it } from "vitest";
 import { app } from "../src/app";
 import { images, imageTags, tags } from "../src/db/schema";
-import { avif, gif, jpeg, png, svg, webpExtended } from "./fixtures";
+import { avif, gif, jpeg, pdf, png, svg, webpExtended } from "./fixtures";
 import { admin, api, body, db, errorCode, seedImage, seedSite, siteAuth } from "./helpers";
 
 let blog: string;
@@ -87,6 +87,14 @@ describe("POST /images", () => {
       expect(image.r2_key.endsWith(`.${ext}`)).toBe(true);
     },
   );
+
+  it("accepts a PDF by content, with no dimensions", async () => {
+    const res = await upload(pdf("up"), { name: "x.png", type: "image/png" });
+    expect(res.status).toBe(201);
+    const { image } = await body<UploadResponse>(res);
+    expect(image).toMatchObject({ content_type: "application/pdf", width: null, height: null });
+    expect(image.r2_key.endsWith(".pdf")).toBe(true);
+  });
 
   it("normalizes tags and reuses existing ones", async () => {
     const { image } = await uploaded(png(5, 5, "tags"), {

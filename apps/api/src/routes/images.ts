@@ -31,15 +31,17 @@ const tag = ["Images"];
 const idParam = z.object({ id: imageIdSchema.openapi({ param: { name: "id", in: "path" } }) });
 
 const uploadForm = uploadFieldsSchema.extend({
-  file: z
-    .instanceof(File)
-    .openapi({ type: "string", format: "binary", description: "JPEG, PNG, WebP, AVIF or GIF" }),
+  file: z.instanceof(File).openapi({
+    type: "string",
+    format: "binary",
+    description: "JPEG, PNG, WebP, AVIF, GIF or PDF",
+  }),
 });
 
 const uploadRoute = createRoute({
   method: "post",
   path: "/images",
-  summary: "Upload an image",
+  summary: "Upload an image or PDF",
   description:
     "Multipart upload. If the same file (by SHA-256) already exists for the site, the existing " +
     "record is returned with 200 and `duplicate: true`. A soft-deleted duplicate is restored.",

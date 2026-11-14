@@ -1,7 +1,7 @@
 import { SELF } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { beforeAll, describe, expect, it } from "vitest";
-import { png } from "./fixtures";
+import { pdf, png } from "./fixtures";
 import { api, errorCode, seedImage, seedSite } from "./helpers";
 
 const PUBLIC = "https://pix.stagerightlabs.com";
@@ -39,6 +39,20 @@ describe("public host: serving originals", () => {
     expect(res.headers.get("etag")).toBeTruthy();
     expect(res.headers.has("set-cookie")).toBe(false);
     expect(new Uint8Array(await res.arrayBuffer())).toEqual(bytes);
+  });
+
+  it.each([
+    ["", "inline"],
+    ["?download", "attachment"],
+  ])("serves a PDF with content-disposition for %j", async (query, disposition) => {
+    const id = await seedImage({ site: "blog" });
+    const key = `blog/2023/${id}.pdf`;
+    await env.IMAGES.put(key, pdf(id), { httpMetadata: { contentType: "application/pdf" } });
+    await env.DB.prepare("UPDATE images SET r2_key = ? WHERE id = ?").bind(key, id).run();
+    const res = await get(`${PUBLIC}/${key}${query}`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toBe("application/pdf");
+    expect(res.headers.get("content-disposition")).toBe(disposition);
   });
 
   it("answers HEAD with the same headers and no body", async () => {

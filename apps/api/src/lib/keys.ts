@@ -6,6 +6,7 @@ export const EXTENSIONS: Record<AllowedContentType, string> = {
   "image/webp": "webp",
   "image/avif": "avif",
   "image/gif": "gif",
+  "application/pdf": "pdf",
 };
 
 /** `{site_id}/{yyyy}/{ulid}.{ext}`. The extension comes from the detected type, never from user input. */

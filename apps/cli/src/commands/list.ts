@@ -6,7 +6,7 @@ import { formatBytes, isoTime, line, note, table } from "../io";
 export const registerList: Register = (program, ctx) => {
   program
     .command("list")
-    .description("List images, newest first")
+    .description("List files, newest first")
     .option("--site <site>", "only this site")
     .option("--tag <tag>", "only images with this tag")
     .option("--q <text>", "search filename and alt text")

@@ -4,7 +4,7 @@ import { formatBytes, isoTime, line } from "../io";
 export const registerInfo: Register = (program, ctx) => {
   program
     .command("info")
-    .description("Show one image's details")
+    .description("Show one file's details")
     .argument("<id>", "image id")
     .action(async (id: string) => {
       const { image: i } = await (await ctx.client()).getImage(id);
@@ -16,7 +16,14 @@ export const registerInfo: Register = (program, ctx) => {
           ["file", i.original_filename],
           ["type", i.content_type],
           ["size", formatBytes(i.size_bytes)],
-          ["dimensions", i.width && i.height ? `${i.width} x ${i.height}` : "unknown"],
+          [
+            "dimensions",
+            i.width && i.height
+              ? `${i.width} x ${i.height}`
+              : i.content_type === "application/pdf"
+                ? "n/a"
+                : "unknown",
+          ],
           ["sha256", i.sha256],
           ["alt", i.alt_text ?? ""],
           ["tags", i.tags.join(", ")],
